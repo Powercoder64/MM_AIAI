@@ -29,13 +29,16 @@ module load cuda/11.8.0
 
 Please ensure that the following pretrained models are placed under the `model/` directory **before running the code**:
 
-- `audio_class_model`
-- `CogDem_Ncon_clear_model`
-- `ExJust_Ncon_clear_model`
-- `Feedback1_Ncon_clear_model`
-- `Feedback2_Ncon_clear_model`
-- `Questions_Ncon_clear_model`
-- `Uptake_Ncon_clear_model`
+```
+model/
+├── audio_class_model/
+├── CogDem_Ncon_clear_model/
+├── ExJust_Ncon_clear_model/
+├── Feedback1_Ncon_clear_model/
+├── Feedback2_Ncon_clear_model/
+├── Questions_Ncon_clear_model/
+└── Uptake_Ncon_clear_model/
+```
 
 ### How to Run
 Run the script with the following command: (example)
@@ -44,3 +47,23 @@ python audio_label.py \
   --video_transcript /home/ekn8kz/Audio/210.041_MATH2_20180320.xlsx \
   --output_xlsx /home/ekn8kz/Audio/output.xlsx
 ```
+
+# How to Run the Audio Labeling Docker Container
+
+After building the Docker image (e.g., with `docker build -t audio_label_gpu .`), you can run the audio labeling script using the following command:
+
+```bash
+docker run --rm --gpus all \
+  -v "$PWD":/home/ubuntu/audio_labeling \
+  -v "$PWD/model":/home/ubuntu/audio_labeling/model \
+  audio_label_gpu \
+  --video_transcript /home/ubuntu/audio_labeling/210.041_MATH2_20180320.xlsx \
+  --output_xlsx /home/ubuntu/audio_labeling/output.xlsx
+```
+
+## Notes:
+- `--gpus all` enables GPU support (requires NVIDIA driver and `nvidia-docker`).
+- `-v "$PWD":/home/ubuntu/audio_labeling` mounts your current directory into the container.
+- `-v "$PWD/model":/home/ubuntu/audio_labeling/model` ensures the pretrained models are accessible.
+- Replace `210.041_MATH2_20180320.xlsx` with your own Excel transcript file.
+- The output Excel file will be written to the current directory as `output.xlsx`.
