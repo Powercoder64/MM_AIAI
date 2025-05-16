@@ -57,7 +57,7 @@ docker run --rm --gpus all \
   -v "$PWD":/home/ubuntu/audio_labeling \
   -v "$PWD/model":/home/ubuntu/audio_labeling/model \
   audio_label_gpu \
-  --video_transcript /home/ubuntu/audio_labeling/210.041_MATH2_20180320.xlsx \
+  --video_transcript /home/ubuntu/audio_labeling/input.xlsx \
   --output_xlsx /home/ubuntu/audio_labeling/output.xlsx
 ```
 
@@ -65,5 +65,5 @@ docker run --rm --gpus all \
 - `--gpus all` enables GPU support (requires NVIDIA driver and `nvidia-docker`).
 - `-v "$PWD":/home/ubuntu/audio_labeling` mounts your current directory into the container.
 - `-v "$PWD/model":/home/ubuntu/audio_labeling/model` ensures the pretrained models are accessible.
-- Replace `210.041_MATH2_20180320.xlsx` with your own Excel transcript file.
+- Replace `input.xlsx` with your own Excel transcript file.
 - The output Excel file will be written to the current directory as `output.xlsx`.
