@@ -39,7 +39,7 @@ model/
 ├── Questions_Ncon_clear_model/
 └── Uptake_Ncon_clear_model/
 ```
-
+link for the model:https://drive.google.com/file/d/11LSGXlFkFIhGZo-Oi59mTj57vVmcGB58/view?usp=sharing
 ### How to Run
 Run the script with the following command: (example)
 ```bash
