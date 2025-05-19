@@ -1,0 +1,8 @@
+site_name: Pre_Processing
+theme:
+  name: material
+  palette:
+    primary: red
+repo_url: 
+markdown_extensions:
+  - admonition

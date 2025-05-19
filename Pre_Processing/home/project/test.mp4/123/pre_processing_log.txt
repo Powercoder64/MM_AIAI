@@ -1,0 +1,15 @@
+123 Caught AttributeError in replica 0 on device 0.
+Original Traceback (most recent call last):
+  File "/home/viva/anaconda3/envs/pwc/lib/python3.7/site-packages/torch/nn/parallel/parallel_apply.py", line 60, in _worker
+    output = module(*input, **kwargs)
+  File "/home/viva/anaconda3/envs/pwc/lib/python3.7/site-packages/torch/nn/modules/module.py", line 547, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home/viva/AIAI_CODES_DAVE/Pre_Processing/models/i3d/extract_i3d.py", line 86, in forward
+    flow_xtr_model, models = self.load_model(device)
+  File "/home/viva/AIAI_CODES_DAVE/Pre_Processing/models/i3d/extract_i3d.py", line 235, in load_model
+    from models.pwc.pwc_src.pwc_net import PWCNet
+  File "/home/viva/AIAI_CODES_DAVE/Pre_Processing/models/pwc/pwc_src/pwc_net.py", line 8, in <module>
+    import models.pwc.pwc_src.correlation as correlation
+  File "/home/viva/AIAI_CODES_DAVE/Pre_Processing/models/pwc/pwc_src/correlation.py", line 282, in <module>
+    @cupy._util.memoize(for_each_device=True)
+AttributeError: module 'cupy' has no attribute '_util'
