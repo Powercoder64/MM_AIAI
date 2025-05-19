@@ -126,9 +126,15 @@ MM_AIAI/
 
 ## 📥 Pre‑Trained Weights
 ```bash
-wget -O checkpoints.zip \
-  'https://drive.google.com/uc?export=download&id=1qYqKxmv1kRp4f4V6L0or9n_B77O0wP-C'
-unzip pp_models.zip -d Pre_Processing/models
+unzip pp_models.zip -d tmp_pp_models
+
+# move the files into place
+mv tmp_pp_models/i3d_rgb.pt   Pre_Processing/models/i3d/checkpoints/
+mv tmp_pp_models/i3d_flow.pt  Pre_Processing/models/i3d/checkpoints/
+mv tmp_pp_models/pwc_net_sintel.pt Pre_Processing/models/pwc/checkpoints/
+
+# clean up
+rm -r tmp_pp_models
 ```
 Resulting tree:
 ```text
