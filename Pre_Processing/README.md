@@ -128,7 +128,7 @@ MM_AIAI/
 ```bash
 wget -O checkpoints.zip \
   'https://drive.google.com/uc?export=download&id=1qYqKxmv1kRp4f4V6L0or9n_B77O0wP-C'
-unzip checkpoints.zip -d Pre_Processing/models
+unzip pp_models.zip -d Pre_Processing/models
 ```
 Resulting tree:
 ```text
