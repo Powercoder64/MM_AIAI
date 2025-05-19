@@ -18,7 +18,6 @@ This module lives in **`MM_AIAI/Pre_Processing/`** and extracts **RGB** and **op
 ## ✨ Features
 - **One‑liner inference:** `python Pre_Processing.py filename=<video.mp4>`
 - **Dual‑stream I3D** (RGB + Flow) with PWC‑Net flow estimation  
-- **Docker‑first workflow** for reproducible CUDA/driver setup  
 - Customisable **input / output folders**, FPS, clip length, device IDs  
 - Produces four artefacts; only `*_rgb.npy` and `*_flow.npy` are mandatory for the subsequent multimodal model
 
@@ -108,7 +107,6 @@ MM_AIAI/
 |-------------------|-------------|-------------------------------------------------------------------------------------------------|
 | Video folder      | `./video/`  | Edit **`utils/utils.py`** → `path_list = './video/' + args.filename`                            |
 | Output folder     | `./output/` | Edit **`models/i3d/extract_i3d.py`** → `self.output_path = './output/'`                         |
-| GPU selection     | all GPUs    | Add `--device_ids 0` (or similar) to the command line                                           |
 | FPS / clip length | see YAMLs   | Tweak files in **`configs/`**                                                                   |
 
 ---
