@@ -2,7 +2,6 @@
 End‑to‑end classroom‑activity detection from **pre‑extracted I3D features** *and* raw discourse transcripts.
 
 > This module lives in **`MM_AIAI/Multimodal_NN/`**  
-> The layout mirrors the **Pre_Processing** README for consistent project structure.
 
 ---
 
