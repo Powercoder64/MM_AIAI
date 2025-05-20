@@ -151,7 +151,7 @@ Multimodal_NN/
 | File | Purpose |
 |------|---------|
 | **MM_Transformer.pth** | Multimodal fusion checkpoint. **Already included** in `models/`; no download needed. |
-| **BaSNet_model_best.pkl** | BVideo baseline model. Download and place in `models/`; can also be tested for video-only baseline. |
+| **BaSNet_model_best.pkl** | Video baseline model. Download and place in `models/`; can also be tested for video-only baseline. |
 
 Download BaSNet:
 
