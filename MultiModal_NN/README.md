@@ -1,5 +1,5 @@
 # Multimodal_NN — Video + Transcript Fusion 🧩
-End‑to‑end classroom‑activity detection from **pre‑extracted I3D features** *and* raw discourse transcripts.
+Classroom‑activity detection from **pre‑extracted I3D features** *and* raw discourse transcripts.
 
 > This module lives in **`MM_AIAI/Multimodal_NN/`**  
 
@@ -150,8 +150,8 @@ Multimodal_NN/
 
 | File | Purpose |
 |------|---------|
-| **MM_Transformer.pth** | Main multimodal fusion checkpoint. **Already included** in `models/`; no download needed. |
-| **BaSNet_model_best.pkl** | Optional baseline video‑only model (BaSNet). Download and place in `models/` if you’d like to run the baseline. |
+| **MM_Transformer.pth** | Multimodal fusion checkpoint. **Already included** in `models/`; no download needed. |
+| **BaSNet_model_best.pkl** | BVideo baseline model. Download and place in `models/`; can also be tested for video-only baseline. |
 
 Download BaSNet:
 
