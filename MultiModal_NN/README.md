@@ -21,7 +21,7 @@ End‑to‑end classroom‑activity detection from **pre‑extracted I3D feature
 * **One‑liner inference**
 
   ```bash
-  python Neural_Network.py --filename=110.026_2018_ELA2_Year2_20171114.mp4
+  python Neural_Network.py --filename=my_clip.mp4
   ```
 
 * **Multimodal fusion** of  
