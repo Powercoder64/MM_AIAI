@@ -17,6 +17,7 @@ Classroom‑activity detection from **pre‑extracted I3D features** *and* raw d
 
 ---
 
+<a id="features"></a>
 ## ✨ Features
 * **One‑liner inference**
 
@@ -32,6 +33,7 @@ Classroom‑activity detection from **pre‑extracted I3D features** *and* raw d
 
 ---
 
+<a id="quick-start"></a>
 ## 🚀 Quick Start
 
 ### 1 · Clone the parent project
@@ -62,6 +64,7 @@ python Neural_Network.py --filename=my_clip.mp4
 
 ---
 
+<a id="inputs"></a>
 ## 📥 Inputs
 
 ```text
@@ -78,6 +81,7 @@ data/
 
 ---
 
+<a id="outputs"></a>
 ## 📦 Outputs
 
 After a run you will find:
@@ -102,6 +106,7 @@ Book-Using_or_Holding,0,0,1,1,1
 
 ---
 
+<a id="project-structure"></a>
 ## 🗂 Project Structure
 
 ```text
@@ -122,6 +127,7 @@ Multimodal_NN/
 
 ---
 
+<a id="configuration"></a>
 ## ⚙️ Configuration
 
 | Parameter        | Default      | Where to change                                     |
@@ -133,6 +139,7 @@ Multimodal_NN/
 
 ---
 
+<a id="dependencies"></a>
 ## 📚 Dependencies
 *(full list in Dockerfile & Conda YAML)*
 
