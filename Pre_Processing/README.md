@@ -15,6 +15,7 @@ This module lives in **`MM_AIAI/Pre_Processing/`** and extracts **RGB** and **op
 
 ---
 
+<a id="features"></a>
 ## ✨ Features
 - **One‑liner inference:** `python Pre_Processing.py filename=<video.mp4>`
 - **Dual‑stream I3D** (RGB + Flow) with PWC‑Net flow estimation  
@@ -23,6 +24,7 @@ This module lives in **`MM_AIAI/Pre_Processing/`** and extracts **RGB** and **op
 
 ---
 
+<a id="quick-start"></a>
 ## 🚀 Quick Start
 
 ### 1 · Clone the parent project
@@ -62,6 +64,7 @@ python Pre_Processing.py filename=my_clip.mp4
 
 ---
 
+<a id="outputs"></a>
 ## 📦 Outputs
 | File (for `my_clip`)        | Tensor shape | Description                                |
 |-----------------------------|--------------|--------------------------------------------|
@@ -74,6 +77,7 @@ Only the first two files are required by the next multimodal stage.
 
 ---
 
+<a id="project-structure"></a>
 ## 🗂 Project Structure
 ```text
 MM_AIAI/
@@ -102,6 +106,7 @@ MM_AIAI/
 
 ---
 
+<a id="configuration"></a>
 ## ⚙️ Configuration
 | Parameter         | Default     | How to change                                                                                   |
 |-------------------|-------------|-------------------------------------------------------------------------------------------------|
@@ -111,6 +116,7 @@ MM_AIAI/
 
 ---
 
+<a id="dependencies"></a>
 ## 📚 Dependencies
 *(Full list in the Dockerfile & Conda YAML)*
 | Package                        | Purpose                                |
@@ -124,6 +130,7 @@ MM_AIAI/
 
 ---
 
+<a id="pre-trained-weights"></a>
 ## 📥 Pre‑Trained Weights
 ```bash
 unzip pp_models.zip -d tmp_pp_models
