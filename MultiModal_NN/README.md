@@ -13,7 +13,7 @@ Classroom‑activity detection from **pre‑extracted I3D features** *and* raw d
 5. [Project Structure](#project-structure)  
 6. [Configuration](#configuration)  
 7. [Dependencies](#dependencies)  
-8. [Pre‑Trained Weights](#pre-trained-weights)
+8. [Pre-Trained Weights](#pre-trained-weights)
 
 ---
 
@@ -146,7 +146,7 @@ Multimodal_NN/
 
 ---
 
-## 📥 Pre‑Trained Weights
+## 📥 Pre-Trained Weights
 
 | File | Purpose |
 |------|---------|
