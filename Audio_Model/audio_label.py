@@ -79,23 +79,33 @@ def process_transcripts(input_path):
         for sublabel in sub_idx2label[label].values():
             binary_results[f"{label} {sublabel}".strip()] = []
 
+    no_label_row = []
+
     for i in valid_indices:
         text = str(df.loc[i, "Transcript"]).strip()
         multi_label_result = predict_main_labels(text)
+
+        # Initialize all sub-labels to 0
         for label in MAIN_LABELS:
             for sublabel in sub_idx2label[label].values():
                 binary_results[f"{label} {sublabel}".strip()].append(0)
+
+        has_any_label = False
         for label in MAIN_LABELS:
             if multi_label_result[label] == 1:
+                has_any_label = True
                 submodel = submodels[label]
                 subtokenizer = sub_tokenizers[label]
                 pred_id = predict_sub_label(text, submodel, subtokenizer)
                 label_name = sub_idx2label[label].get(pred_id, f"Label_{pred_id}")
                 binary_results[f"{label} {label_name}".strip()][-1] = 1
 
+        no_label_row.append(1 if not has_any_label else 0)
+
     output_rows = []
     for k, v in binary_results.items():
         output_rows.append([k] + v)
+    output_rows.append(["NoLabel"] + no_label_row)
 
     result_df = pd.DataFrame(output_rows, columns=column_headers)
     return result_df
