@@ -1,6 +1,6 @@
 # Audio Labeling Script
 
-This script processes Excel-format transcript data (e.g., classroom audio transcripts) and generates labeled samples based on a specified field (e.g., `Feedback2`). The output can be used for training audio classification or sequence models.
+This script processes transcript data (e.g., classroom audio transcripts) and generates labeled samples based on a specified field (e.g., `Feedback2`). The output can be used for training audio classification or sequence models.
 ---
 
 ## Environment Setup
