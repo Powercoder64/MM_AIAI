@@ -35,11 +35,9 @@ def ms_to_timestamp(ms):
     seconds = ms // 1000
     return f"{seconds//60:02d}:{seconds%60:02d}"
 
-def convert_json_to_virtual_xlsx(transcript_path, output_path):
+def convert_json_to_virtual_xlsx(transcript_path, output_path=None):
     with open(transcript_path, 'r', encoding='utf-8') as f:
         transcript_data = json.load(f)
-    with open(output_path, 'r', encoding='utf-8') as f:
-        mmio_data = json.load(f)
 
     rows = []
     id_to_index = {}
@@ -55,26 +53,32 @@ def convert_json_to_virtual_xlsx(transcript_path, output_path):
         rows.append(row)
         id_to_index[entry["id"]] = i
 
-    for field, entries in mmio_data.items():
-        for item in entries:
-            ids = item.get("ids", [])
-            labels = item.get("labels", [])
-            for label in labels:
-                if label not in MMIO_TO_MODEL_SUBLABEL:
-                    continue
-                target_col, model_label = MMIO_TO_MODEL_SUBLABEL[label]
-                for sid in ids:
-                    if sid in id_to_index:
-                        idx = id_to_index[sid]
-                        current = rows[idx][target_col]
-                        if model_label not in current:
-                            rows[idx][target_col] = (current + "; " + model_label).strip("; ")
+    
+    if output_path:
+        with open(output_path, 'r', encoding='utf-8') as f:
+            mmio_data = json.load(f)
+
+        for field, entries in mmio_data.items():
+            for item in entries:
+                ids = item.get("ids", [])
+                labels = item.get("labels", [])
+                for label in labels:
+                    if label not in MMIO_TO_MODEL_SUBLABEL:
+                        continue
+                    target_col, model_label = MMIO_TO_MODEL_SUBLABEL[label]
+                    for sid in ids:
+                        if sid in id_to_index:
+                            idx = id_to_index[sid]
+                            current = rows[idx][target_col]
+                            if model_label not in current:
+                                rows[idx][target_col] = (current + "; " + model_label).strip("; ")
 
     df = pd.DataFrame(rows)
     virtual_excel = BytesIO()
     df.to_excel(virtual_excel, index=False)
     virtual_excel.seek(0)
     return virtual_excel
+
 
 
 MAIN_LABELS = ["CogDem", "Questions", "ExJust", "Feedback1", "Feedback2", "Uptake"]
@@ -184,21 +188,19 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--video_transcript", type=str, help="Path to input .XLSX file")
-    group.add_argument("--transcript_json", type=str, help="Path to transcript.json (used with --output_json)")
+    group.add_argument("--transcript_json", type=str, help="Path to transcript.json")
 
-    parser.add_argument("--output_json", type=str, help="Path to output.json (required if using --transcript_json)")
     parser.add_argument("--output_xlsx", type=str, default="predictions.xlsx", help="Path to output XLSX file")
 
     args = parser.parse_args()
 
     if args.transcript_json:
-        if not args.output_json:
-            raise ValueError("You must provide --output_json when using --transcript_json.")
-        virtual_excel = convert_json_to_virtual_xlsx(args.transcript_json, args.output_json)
+        virtual_excel = convert_json_to_virtual_xlsx(args.transcript_json)  # 🚫 no output_json now
         df_result = process_transcripts(virtual_excel)
     else:
         df_result = process_transcripts(args.video_transcript)
 
     df_result.to_excel(args.output_xlsx, index=False)
     print(f" Predictions saved to {args.output_xlsx}")
+
 
