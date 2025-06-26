@@ -41,11 +41,20 @@ model/
 ```
 link for the model: [Download Link](https://drive.google.com/file/d/11LSGXlFkFIhGZo-Oi59mTj57vVmcGB58/view?usp=sharing)
 ### How to Run
-Run the script with the following command: (example)
+
+Option 1: Using .xlsx input: (example)
+
 ```bash
 python audio_label.py \
-  --video_transcript /home/ekn8kz/Audio/210.041_MATH2_20180320.xlsx \
-  --output_xlsx /home/ekn8kz/Audio/output.xlsx
+  --video_transcript ./210.041_MATH2_20180320.xlsx \
+  --output_xlsx ./output.xlsx
+```
+
+Option 2: Using .json input
+```bash
+python audio_label.py \
+  --transcript_json ./transcript.json \
+  --output_xlsx ./output.xlsx
 ```
 
 # How to Run the Audio Labeling Docker Container
