@@ -22,8 +22,8 @@ Classroom‑activity detection from **pre‑extracted I3D features** *and* raw d
 * **inference**
 
   ```bash
-  python Neural_Network.py --filename=my_clip.mp4 #runs the multimodal model and produces the audio-enhanced video labels
-  
+  python Neural_Network.py --filename=my_clip.mp4  #runs the multimodal model and produces the audio-enhanced video labels
+
   ```
 
 * **Multimodal fusion** of  
