@@ -27,7 +27,7 @@ Classroom‑activity detection from **pre‑extracted I3D features** *and* raw d
 
 * **Multimodal fusion** of  
   • RGB embeddings + Flow embeddings + 20‑class transcript one‑hots  
-* **CSV matrix output** with **24 activity classes** (rows) × **seconds** (columns)  
+* **JSON matrix output** with **24 activity classes** + **audio/transcript labels**  
 * Docker container & Conda recipe included  
 * All data stays inside **`./data/`** (override via `options.py`)
 
@@ -75,34 +75,13 @@ data/
 │   ├── my_clip_rgb.npy
 │   └── my_clip_flow.npy
 └── transcripts/        # annotated discourse spreadsheets
-    └── my_clip.xlsx    # sheet “Coding Labels”
+    └── my_clip.xlsx    # audio labels obtained by the Audio Model”
 ```
 *The default root (`./data`) can be changed in **`options.py`**.*
 
 ---
 
 <a id="outputs"></a>
-## 📦 Outputs
-
-After a run you will find:
-
-| File (for `my_clip`) | Shape / Type | Description |
-|----------------------|--------------|-------------|
-| `my_clip_MATRIX.csv` | 24 × *S*     | Binary **activity matrix**<br>rows = classes, cols = seconds |
-
-<details>
-<summary>CSV preview (first 5 s, 4 classes)</summary>
-
-```text
-,0001,0002,0003,0004,0005
-Whole_Class_Activity,0,1,1,1,0
-Individual_Activity ,0,0,1,0,0
-Small_Group_Activity,0,0,0,0,0
-Book-Using_or_Holding,0,0,1,1,1
-...
-```
-*0 = class absent, 1 = class present (per second).*
-</details>
 
 ---
 
@@ -112,6 +91,7 @@ Book-Using_or_Holding,0,0,1,1,1
 ```text
 Multimodal_NN/
 ├── Neural_Network.py          # entry point (arg --filename)
+├── Merge_JASON.py             # merge audio and video labels as a single JSON
 ├── options.py                 # paths & hyper‑params
 ├── models/
 │   ├── BaSNet_model_best.pkl  # ⇦ download & place here
@@ -123,6 +103,7 @@ Multimodal_NN/
 ├── utils/                     # data loaders, metrics, logging
 ├── Dockerfile
 └── conda_env_mm_nn.yml
+
 ```
 
 ---
@@ -182,7 +163,8 @@ models/
 ### ▶️ Full example
 ```bash
 python Neural_Network.py --filename=my_clip.mp4
+python Merge_JASON.py
+# →  outputs/my_clip_MATRIX.JSON
 # →  outputs/my_clip_MATRIX.csv
 ```
 
-Enjoy second‑wise classroom‑activity matrices for your downstream analyses! 🎉
