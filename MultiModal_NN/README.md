@@ -163,7 +163,6 @@ models/
 ### ▶️ Full example
 ```bash
 python Neural_Network.py --filename=my_clip.mp4
-python Merge_JASON.py
 # →  outputs/my_clip_MATRIX.JSON
 # →  outputs/my_clip_MATRIX.csv
 ```
