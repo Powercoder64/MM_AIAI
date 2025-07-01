@@ -27,7 +27,7 @@ Classroom‑activity detection from **pre‑extracted I3D features** *and* raw d
 **For Debugging purposes, several output JSON files can be created:**
 
  ```bash
-  python convert_JSON_video.py file_name  #converts the output video csv file to MM_IO video output JSON file
+  python convert_JSON_video.py file_name  #converts the output video csv file to MM_IO Multimodal (audio-enhanced video) output JSON file
  ```
 
  ```bash
@@ -105,7 +105,7 @@ data/
 ```text
 Multimodal_NN/
 ├── Neural_Network.py          # entry point (arg --filename)
-├── convert_JSON_video.py             # convert to mm-io video JSON file
+├── convert_JSON_video.py             # convert to mm-io Multimodal (audio-enhanced video) JSON file
 ├── convert_JSON_audio.py             # convert to mm-io audio JSON file
 ├── convert_JSON_audio_video.py             # convert to mm-io audio+video merged JSON file
 ├── options.py                 # paths & hyper‑params
