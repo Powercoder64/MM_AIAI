@@ -27,15 +27,15 @@ Classroom‑activity detection from **pre‑extracted I3D features** *and* raw d
 **For Debugging purposes, several output JSON files can be created:**
 
  ```bash
-  python convert_JSON_video.py file_name  #converts the output video csv file to mm_io video output JSON file
+  python convert_JSON_video.py file_name  #converts the output video csv file to MM_IO video output JSON file
  ```
 
  ```bash
-  python convert_JSON_audio.py file_name  #converts the output audio xlsx + input JSON to mm_io audio output JSON file
+  python convert_JSON_audio.py file_name  #converts the output audio xlsx + input JSON to MM_IO audio output JSON file
  ```
 
  ```bash
-  python convert_JSON_audio_video.py file_name  #converts the output audio xlsx + input JSON + video csv to mm_io audio+video output JSON file
+  python convert_JSON_audio_video.py file_name  #converts the output audio xlsx + input JSON + video csv to MM_IO audio+video output JSON file
  ```
 
 
