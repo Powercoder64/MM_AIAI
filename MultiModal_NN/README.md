@@ -24,9 +24,10 @@ Classroom‑activity detection from **pre‑extracted I3D features** *and* raw d
   ```bash
   python Neural_Network.py --filename=my_clip.mp4  #runs the multimodal model and produces the audio-enhanced video labels
   ```
+**For Debugging purposes, several output JSON files can be created:**
 
-```bash
-For Debugging purposes, several output JSON files can be created: #  python convert_JSON_video.py file_name.csv  #converts the output csv file to JSON file
+ ```bash
+  python convert_JSON_video.py file_name.csv  #converts the output csv file to JSON file
  ```
 
 
