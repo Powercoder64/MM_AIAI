@@ -121,8 +121,10 @@ def results_process(results, output_path, filename, data_path):
     scaled_results = scale_binary_2d(results_all, scale_factor)
     #print(scaled_results.shape)
     
-    n_secs   = scaled_results.shape[0]                    # seconds in video
+    n_secs   = scaled_results.shape[0]    
+                    # seconds in video
     col_names = [f"{s+1:04d}" for s in range(n_secs)] 
+    #print(n_secs)
     
     df = pd.DataFrame(
     scaled_results.T,                                 # rows == activities
@@ -140,149 +142,97 @@ def results_process(results, output_path, filename, data_path):
 
     RAW_FILE      = data_path + '/audio/' + filename[0:-4] + '.xlsx'        # raw “transcript + labels”
     OUTPUT_FILE   = './tmp/temp_tran.xlsx'
-    TEMPLATE_FILE = None            # keep row order from a template, or None to build fresh
+    #TEMPLATE_FILE = None            # keep row order from a template, or None to build fresh
 
-    WORDS_PER_SEC = 2.0             # tweak if your speakers talk faster/slower
-    UNKNOWN_VALUE = -1              # value for spoken-but-unlabelled seconds
+    # ── 19 canonical rows (order matters) ──────────────────────────────────────
+    ROWS = [
+        "CogDem Analysis_Give",
+        "CogDem Analysis_Request",
+        "CogDem Report_Give",
+        "CogDem Report_Request",
+        "ExJust Student_Give",
+        "ExJust Student_Request",
+        "ExJust Teacher_Give",
+        "ExJust Teacher_Request",
+        "Feedback2 Elaborated",
+        "Feedback2 Unelaborated",
+        "Feedback1 Affirming",
+        "Feedback1 Disconfirming",
+        "Feedback1 Neutral",
+        "Questions Closed",
+        "Questions Open",
+        "Uptake Building",
+        "Uptake Exploring",
+        "Uptake Restating",
+        "NoLabel",
+    ]
+
+    TS_RX = re.compile(r"^(\d{1,2}):(\d{2})")  # matches MM:SS or MM:SS.xxx
 
 
-    TS_RX = re.compile(r"\((\d{1,2}):(\d{2})\)")         # grabs (MM:SS)
+    def ts_to_sec(ts: str) -> int:
+        """'12:34' → 754 seconds."""
+        m = TS_RX.match(str(ts))
+        if not m:
+            raise ValueError(f"Bad timestamp: {ts!r}")
+        mm, ss = map(int, m.groups())
+        return mm * 60 + ss
 
 
-    def ts_to_sec(mm: str, ss: str) -> int:
-        return int(mm) * 60 + int(ss)
+    def convert(in_path: str, out_path: str) -> None:
+        df = pd.read_excel(in_path)
+
+        # ── collect start times & active codes ─────────────────────────────────
+        ts_cols = [c for c in df.columns if c != "AudioLabel"]
+        if not ts_cols:
+            raise RuntimeError("No timestamp columns found.")
+
+        start_secs = sorted(ts_to_sec(c) for c in ts_cols)
+        utter_map = {
+            ts_to_sec(c): df.loc[df[c] == 1, "AudioLabel"].astype(str).tolist()
+            for c in ts_cols
+        }
+
+        # ── build utterance spans (start … next-1) ─────────────────────────────
+        utterances = []
+        for i, s in enumerate(start_secs):
+            nxt = start_secs[i + 1] if i + 1 < len(start_secs) else None
+            end_sec = (nxt - 1) if nxt is not None else s
+            utterances.append((s, end_sec, utter_map.get(s, [])))
+
+        first_sec, last_sec = start_secs[0], utterances[-1][1]
+        time_axis = list(range(first_sec, last_sec + 1))
+        headers = [f"{t - first_sec:04d}" for t in time_axis]
 
 
-    def collect_audio_rows(template):
-        if template is None:
-            return []
-        rows = pd.read_excel(template)["AudioLabel"].astype(str).tolist()
-        if "NoLabel" not in rows:
-            rows.append("NoLabel")
-        return rows
+        zero_block = pd.DataFrame(
+            np.zeros((len(ROWS), len(headers)), dtype=np.int8),  # tiny & fast
+            columns=headers,
+        )
+        grid = pd.concat([pd.DataFrame({"AudioLabel": ROWS}), zero_block], axis=1)
+        idx = {lbl: i for i, lbl in enumerate(ROWS)}
 
-
-    def convert_raw_to_seconds(raw_path, out_path, template_path=None):
-        df = pd.read_excel(raw_path, sheet_name="Coding Labels")
-
-        code_cols = ["CogDem", "Questions", "ExJust",
-                    "Feedback1", "Feeback2", "Uptake"]
-
-        # ── pass 1: build a list of utterances with [start_sec, end_sec, codes] ──
-        utterances, all_codes = [], set()
-
-        # pull the start-times first so we can look-ahead
-        start_secs = []
-        for tr in df["Transcript"]:
-            m = TS_RX.search(str(tr))
-            start_secs.append(ts_to_sec(*m.groups()) if m else None)
-
-        for idx, row in df.iterrows():
-            start = start_secs[idx]
-            if start is None:
-                continue
-
-            # look-ahead to next valid start (None if this is the last)
-            next_idx = idx + 1
-            while next_idx < len(start_secs) and start_secs[next_idx] is None:
-                next_idx += 1
-            next_start = start_secs[next_idx] if next_idx < len(start_secs) else None
-
-            # estimate duration
-            words = len(str(row["Transcript"]).split())
-            est_dur = math.ceil(words / WORDS_PER_SEC)
-            est_end = start + est_dur                     # inclusive of last second spoken
-
-            # hard-clip so we never reach the next turn’s start
-            if next_start is not None and est_end >= next_start:
-                est_end = next_start - 1                  # last allowed second
-
-            # collect codes
-            codes_here = []
-            for col in code_cols:
-                val = str(row.get(col, "")).strip()
-                if val and val.lower() != "nan":
-                    label = f"{col} {val}"
-                    codes_here.append(label)
-                    all_codes.add(label)
-
-            utterances.append((start, est_end, codes_here))
-
-        # ── build full time axis ────────────────────────────────────────────────
-        if not utterances:
-            raise RuntimeError("No valid timestamps found!")
-
-        first_sec = utterances[0][0]
-        last_sec  = max(u[1] for u in utterances)
-        time_axis = list(range(first_sec, last_sec + 1))           # inclusive
-
-        # four-digit, zero-padded relative second labels 0000, 0001, …
-        col_headers = [f"{(s - first_sec):04d}" for s in time_axis]
-
-        # ── initialise grid ─────────────────────────────────────────────────────
-        rows = collect_audio_rows(template_path) or [
-            "CogDem Analysis_Give",
-            "CogDem Analysis_Request",
-            "CogDem Report_Give",
-            "CogDem Report_Request",
-            "ExJust Student_Give",
-            "ExJust Student_Request",
-            "ExJust Teacher_Give",
-            "ExJust Teacher_Request",
-            "Feeback2 Elaborated",
-            "Feeback2 Unelaborated",
-            "Feedback1 Affirming",
-            "Feedback1 Disconfirming",
-            "Feedback1 Neutral",
-            "Questions Closed",
-            "Questions Open",
-            "Uptake Building",
-            "Uptake Exploring",
-            "Uptake Restating",
-            "NoLabel"
-        ]
-
-        if "NoLabel" not in rows:
-            rows.append("NoLabel")
-
-        grid = pd.DataFrame({"AudioLabel": rows})
-        for hdr in col_headers:
-            grid[hdr] = 0
-
-        label_to_idx = {lbl: i for i, lbl in enumerate(rows)}
-
-        # ── fill grid per-second ────────────────────────────────────────────────
+        # ── populate grid ──────────────────────────────────────────────────────
         for start, end, codes in utterances:
-            rel_start = start - first_sec
-            rel_end   = end   - first_sec
+            rel_start, rel_end = start - first_sec, end - first_sec
 
-            if not codes:  # spoken line unlabelled
-                grid.loc[:, col_headers[rel_start : rel_end + 1]] = UNKNOWN_VALUE
+            # keep only recognised labels
+            codes = [c for c in codes if c in idx]
+
+            if not codes:
+                grid.iloc[idx["NoLabel"], 1 + rel_start : 1 + rel_end + 1] = 1
                 continue
 
             for code in codes:
-                if code not in label_to_idx:
-                    # unseen label – append new row
-                    label_to_idx[code] = len(grid)
-                    grid = pd.concat(
-                        [grid,
-                        pd.DataFrame([[code] + [0]*len(time_axis)],
-                                    columns=["AudioLabel"] + col_headers)],
-                        ignore_index=True
-                    )
-                r = label_to_idx[code]
-                grid.iloc[r, 1 + rel_start : 1 + rel_end + 1] = 1   # +1 for “AudioLabel” col
+                grid.iloc[idx[code], 1 + rel_start : 1 + rel_end + 1] = 1
 
-        # ── save ────────────────────────────────────────────────────────────────
+        # ── sanity-check row order then save ───────────────────────────────────
+        grid = grid.set_index("AudioLabel").reindex(ROWS).reset_index()
+        Path(out_path).parent.mkdir(parents=True, exist_ok=True)
         grid.to_excel(out_path, index=False)
-        print(f"Second-level matrix saved →  {Path(out_path).resolve()}")
+        print("Saved:", Path(out_path).resolve())
 
-
-    # kick it off
-    convert_raw_to_seconds(RAW_FILE, OUTPUT_FILE, TEMPLATE_FILE)
-
-
-
+    convert(RAW_FILE, OUTPUT_FILE)
 
     #TARGET_FILE = './tmp/temp_tran.xlsx'      
     CKPT_PATH   =  './models/MM_Transformer.pth'           # saved checkpoint from training
@@ -296,8 +246,8 @@ def results_process(results, output_path, filename, data_path):
     TRANSCRIPT_CLASSES = [
         "CogDem Analysis_Give", "CogDem Analysis_Request", "CogDem Report_Give",
         "CogDem Report_Request", "ExJust Student_Give", "ExJust Student_Request",
-        "ExJust Teacher_Give", "ExJust Teacher_Request", "Feeback2 Elaborated",
-        "Feeback2 Unelaborated", "Feedback1 Affirming", "Feedback1 Disconfirming",
+        "ExJust Teacher_Give", "ExJust Teacher_Request", "Feedback2 Elaborated",
+        "Feedback2 Unelaborated", "Feedback1 Affirming", "Feedback1 Disconfirming",
         "Feedback1 Neutral", "NoLabel", "Questions Closed", "Questions Open",
         "Questions Prompt", "Uptake Building", "Uptake Exploring", "Uptake Restating"
     ]
@@ -337,10 +287,16 @@ def results_process(results, output_path, filename, data_path):
     n_frames    = pred_df.shape[1]
 
     # Build per-frame 44-D feature matrix
-    feat_frames = np.concatenate(
-        [pred_df.values.T, full_tran.values.T], axis=1      # (T, 44)
-    ).astype(np.float32)
+    if pred_df.values.T.shape[0] < full_tran.values.T.shape[0]:
+        feat_frames = np.concatenate(
+            [pred_df.values.T, full_tran.values.T[0: pred_df.values.T.shape[0]]], axis=1      # (T, 44)
+        ).astype(np.float32)
 
+    if pred_df.values.T.shape[0] > full_tran.values.T.shape[0]:
+        
+                feat_frames = np.concatenate(
+            [pred_df.values.T[0: full_tran.values.T.shape[0]], full_tran.values.T], axis=1      # (T, 44)
+        ).astype(np.float32)
     # ---------------------------------------------------------------- #
     # 4.  Build every ±5-s sequence (centre = frames 5 … T-6)
     # ---------------------------------------------------------------- #
