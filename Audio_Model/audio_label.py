@@ -8,7 +8,9 @@ import re
 from io import BytesIO
 import json
 import pandas as pd
+from collections import defaultdict
 
+# Mapping from sublabel (model output) to MMIO label
 MMIO_TO_MODEL_SUBLABEL = {
     "teacherExplainsThinking": ("CogDem", "Analysis_Give"),
     "askingForThinking": ("CogDem", "Analysis_Request"),
@@ -30,6 +32,76 @@ MMIO_TO_MODEL_SUBLABEL = {
     "pushesStudentThinkingFurther": ("Uptake", "Exploring"),
     "repeatsStudentIdea": ("Uptake", "Restating")
 }
+# Reverse mapping
+MODEL_TO_MMIO_SUBLABEL = {
+    f"{v[0]} {v[1]}": k for k, v in MMIO_TO_MODEL_SUBLABEL.items()
+}
+# MMIO output field mapping
+MODEL_LABEL_TO_MMIO_FIELD = {
+    "CogDem": "levelOfThinkingPromoted",
+    "Questions": "typesOfQuestionsAsked",
+    "ExJust": "explainingAndJustifyingIdeas",
+    "Feedback1": "feedbackToStudents",
+    "Feedback2": "feedbackToStudents",
+    "Uptake": "embracingStudentIdeas"
+}
+
+
+def convert_predictions_to_mmio_json(original_transcript_data, df_input, df_result):
+    # Build a mapping from timestamp to transcript ID
+    timestamp_to_id = {}
+    for i, row in df_input.iterrows():
+        ts = row["Transcript"]
+        match = pd.Series(ts).str.extract(r"\((\d{2}):(\d{2})\)")
+        if not match.isnull().values.any():
+            minutes, seconds = map(int, match.iloc[0])
+            timestamp_str = f"{minutes:02d}:{seconds:02d}"
+            timestamp_to_id[timestamp_str] = i + 1  # id starts from 1 as implied
+
+    # Build ID to original transcript entry mapping
+    id_to_entry = {entry["id"]: entry for entry in original_transcript_data}
+
+    # Prepare result dictionary
+    result_dict = defaultdict(list)
+
+    # Iterate through each label row before 'NoLabel'
+    for _, row in df_result.iterrows():
+        model_label = row["AudioLabel"]
+        if model_label == "NoLabel" or model_label not in MODEL_TO_MMIO_SUBLABEL:
+            continue
+
+        mmio_label = MODEL_TO_MMIO_SUBLABEL[model_label]
+        field = MODEL_LABEL_TO_MMIO_FIELD[model_label.split(" ")[0]]
+
+        ids = []
+        start, end = float("inf"), -float("inf")
+
+        for ts in df_result.columns[1:]:
+            if row[ts] == 1 and ts in timestamp_to_id:
+                tid = timestamp_to_id[ts]
+                entry = id_to_entry.get(tid)
+                if entry:
+                    ids.append(entry["id"])
+                    start = min(start, entry["startMilliseconds"])
+                    end = max(end, entry["endMilliseconds"])
+
+        if ids:
+            # Check for existing same segment
+            merged = False
+            for item in result_dict[field]:
+                if item["start"] == start and item["end"] == end and item["labels"] == [mmio_label]:
+                    item["ids"].extend(ids)
+                    merged = True
+                    break
+            if not merged:
+                result_dict[field].append({
+                    "start": start,
+                    "end": end,
+                    "ids": ids,
+                    "labels": [mmio_label]
+                })
+
+    return dict(result_dict)
 
 def ms_to_timestamp(ms):
     seconds = ms // 1000
@@ -190,17 +262,49 @@ if __name__ == "__main__":
     group.add_argument("--video_transcript", type=str, help="Path to input .XLSX file")
     group.add_argument("--transcript_json", type=str, help="Path to transcript.json")
 
-    parser.add_argument("--output_xlsx", type=str, default="predictions.xlsx", help="Path to output XLSX file")
+    parser.add_argument("--output_path", type=str, required=True,
+                        help="Path to output file (.xlsx or .json depending on output_type)")
+    parser.add_argument("--output_type", type=str, choices=["xlsx", "json"], required=True,
+                        help="Output type: must be 'xlsx' or 'json'")
 
     args = parser.parse_args()
 
-    if args.transcript_json:
-        virtual_excel = convert_json_to_virtual_xlsx(args.transcript_json)  # 🚫 no output_json now
-        df_result = process_transcripts(virtual_excel)
-    else:
-        df_result = process_transcripts(args.video_transcript)
+    if args.video_transcript:
+        if args.output_type == "xlsx":
+            df_result = process_transcripts(args.video_transcript)
+            df_result.to_excel(args.output_path, index=False)
+            print(f"Predictions saved to {args.output_path}")
+        else:
+            print("JSON output from XLSX input is not currently supported. This feature will be added in the future.")
 
-    df_result.to_excel(args.output_xlsx, index=False)
-    print(f" Predictions saved to {args.output_xlsx}")
+    elif args.transcript_json:
+        with open(args.transcript_json, 'r', encoding='utf-8') as f:
+            original_transcript_data = json.load(f)
+
+        virtual_excel = convert_json_to_virtual_xlsx(args.transcript_json)
+        df_input = pd.read_excel(virtual_excel)
+        df_result = process_transcripts(virtual_excel)
+
+        if args.output_type == "xlsx":
+            df_result.to_excel(args.output_path, index=False)
+            print(f"Predictions saved to {args.output_path}")
+        else:
+            output_json = convert_predictions_to_mmio_json(original_transcript_data, df_input, df_result)
+            json_str = json.dumps(output_json, indent=2)
+            json_str = re.sub(
+                r'("ids": )\[\s+([^\[\]]+?)\s+\]',
+                lambda m: f'{m.group(1)}[{", ".join(x.strip() for x in m.group(2).splitlines())}]',
+                json_str
+            )
+            json_str = re.sub(
+                r'("labels": )\[\s+([^\[\]]+?)\s+\]',
+                lambda m: f'{m.group(1)}[{", ".join(x.strip() for x in m.group(2).splitlines())}]',
+                json_str
+            )
+
+            with open(args.output_path, "w", encoding="utf-8") as f:
+                f.write(json_str)
+
+            print(f"Predictions saved to {args.output_path}")
 
 
