@@ -24,18 +24,9 @@ Classroom‑activity detection from **pre‑extracted I3D features** *and* raw d
   ```bash
   python Neural_Network.py --filename=my_clip.mp4  #runs the multimodal model and produces the audio-enhanced video labels
   ```
-**For Debugging purposes, several output JSON files can be created:**
 
  ```bash
   python convert_JSON_video.py file_name  #converts the output video csv file to MM_IO Multimodal (audio-enhanced video) output JSON file
- ```
-
- ```bash
-  python convert_JSON_audio.py file_name  #converts the output audio xlsx + input JSON to MM_IO audio output JSON file
- ```
-
- ```bash
-  python convert_JSON_audio_video.py file_name  #converts the output audio xlsx + input JSON + video csv to MM_IO audio+video merged output JSON file
  ```
 
 
@@ -106,8 +97,6 @@ data/
 Multimodal_NN/
 ├── Neural_Network.py          # entry point (arg --filename)
 ├── convert_JSON_video.py             # convert to mm-io Multimodal (audio-enhanced video) JSON file
-├── convert_JSON_audio.py             # convert to mm-io audio JSON file
-├── convert_JSON_audio_video.py             # convert to mm-io audio+video merged JSON file
 ├── options.py                 # paths & hyper‑params
 ├── models/
 │   ├── BaSNet_model_best.pkl  # ⇦ download & place here
