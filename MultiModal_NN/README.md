@@ -26,7 +26,7 @@ Classroom‑activity detection from **pre‑extracted I3D features** *and* raw d
   ```
 
  ```bash
-  python convert_JSON_video.py file_name  #converts the output video csv file to MM_IO Multimodal (audio-enhanced video) output JSON file
+  python convert_JSON_MM.py file_name  #converts the output video csv file to MM_IO Multimodal (audio-enhanced video) output JSON file
  ```
 
 
