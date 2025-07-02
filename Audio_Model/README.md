@@ -42,20 +42,32 @@ model/
 link for the model: [Download Link](https://drive.google.com/file/d/11LSGXlFkFIhGZo-Oi59mTj57vVmcGB58/view?usp=sharing)
 ### How to Run
 
-Option 1: Using .xlsx input: (example)
+Option 1: Using `.xlsx` input
 
 ```bash
 python audio_label.py \
   --video_transcript ./210.041_MATH2_20180320.xlsx \
-  --output_xlsx ./output.xlsx
+  --output_path ./output.xlsx \
+  --output_type xlsx
 ```
+Option 2: Using `.json` input and outputting `.xlsx`
 
-Option 2: Using .json input
 ```bash
 python audio_label.py \
   --transcript_json ./transcript.json \
-  --output_xlsx ./output.xlsx
+  --output_path ./output.xlsx \
+  --output_type xlsx
 ```
+Option 3: Using `.json` input and outputting `.json`
+
+```bash
+python audio_label.py \
+  --transcript_json ./transcript.json \
+  --output_path ./output.json \
+  --output_type json
+```
+
+JSON output from `.xlsx` input is not currently supported and will be added in a future version.
 
 # How to Run the Audio Labeling Docker Container
 
@@ -67,7 +79,8 @@ docker run --rm --gpus all \
   -v "$PWD/model":/home/ubuntu/audio_labeling/model \
   audio_label_gpu \
   --video_transcript /home/ubuntu/audio_labeling/input.xlsx \
-  --output_xlsx /home/ubuntu/audio_labeling/output.xlsx
+  --output_path /home/ubuntu/audio_labeling/output.xlsx \
+  --output_type xlsx
 ```
 
 ## Notes:
