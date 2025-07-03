@@ -47,16 +47,10 @@ MODEL_LABEL_TO_MMIO_FIELD = {
 }
 
 
+
 def convert_predictions_to_mmio_json(original_transcript_data, df_input, df_result):
-    # Build a mapping from timestamp to transcript ID
-    timestamp_to_id = {}
-    for i, row in df_input.iterrows():
-        ts = row["Transcript"]
-        match = pd.Series(ts).str.extract(r"\((\d{2}):(\d{2})\)")
-        if not match.isnull().values.any():
-            minutes, seconds = map(int, match.iloc[0])
-            timestamp_str = f"{minutes:02d}:{seconds:02d}"
-            timestamp_to_id[timestamp_str] = i + 1  # id starts from 1 as implied
+    # df_result.to_excel("test.xlsx", index=False)
+    # print(" Saved df_result to test.xlsx for inspection.")
 
     # Build ID to original transcript entry mapping
     id_to_entry = {entry["id"]: entry for entry in original_transcript_data}
@@ -73,35 +67,25 @@ def convert_predictions_to_mmio_json(original_transcript_data, df_input, df_resu
         mmio_label = MODEL_TO_MMIO_SUBLABEL[model_label]
         field = MODEL_LABEL_TO_MMIO_FIELD[model_label.split(" ")[0]]
 
-        ids = []
-        start, end = float("inf"), -float("inf")
-
-        for ts in df_result.columns[1:]:
-            if row[ts] == 1 and ts in timestamp_to_id:
-                tid = timestamp_to_id[ts]
-                entry = id_to_entry.get(tid)
-                if entry:
-                    ids.append(entry["id"])
-                    start = min(start, entry["startMilliseconds"])
-                    end = max(end, entry["endMilliseconds"])
-
-        if ids:
-            # Check for existing same segment
-            merged = False
-            for item in result_dict[field]:
-                if item["start"] == start and item["end"] == end and item["labels"] == [mmio_label]:
-                    item["ids"].extend(ids)
-                    merged = True
-                    break
-            if not merged:
+        # Use iloc to get prediction values by index, starting from column 1
+        for idx in range(1, len(row)):  # skip "AudioLabel" column
+            val = row.iloc[idx]
+            if pd.notnull(val) and int(val) == 1:
+                entry = original_transcript_data[idx - 1]  # align with original transcript entry
                 result_dict[field].append({
-                    "start": start,
-                    "end": end,
-                    "ids": ids,
+                    "start": entry["startMilliseconds"],
+                    "end": entry["endMilliseconds"],
+                    "ids": [entry["id"]],
                     "labels": [mmio_label]
                 })
+    for field in result_dict:
+        result_dict[field].sort(key=lambda x: x["start"])
 
     return dict(result_dict)
+
+
+
+
 
 def ms_to_timestamp(ms):
     seconds = ms // 1000
@@ -290,21 +274,11 @@ if __name__ == "__main__":
             print(f"Predictions saved to {args.output_path}")
         else:
             output_json = convert_predictions_to_mmio_json(original_transcript_data, df_input, df_result)
-            json_str = json.dumps(output_json, indent=2)
-            json_str = re.sub(
-                r'("ids": )\[\s+([^\[\]]+?)\s+\]',
-                lambda m: f'{m.group(1)}[{", ".join(x.strip() for x in m.group(2).splitlines())}]',
-                json_str
-            )
-            json_str = re.sub(
-                r'("labels": )\[\s+([^\[\]]+?)\s+\]',
-                lambda m: f'{m.group(1)}[{", ".join(x.strip() for x in m.group(2).splitlines())}]',
-                json_str
-            )
 
             with open(args.output_path, "w", encoding="utf-8") as f:
-                f.write(json_str)
+                json.dump(output_json, f, indent=2)
 
             print(f"Predictions saved to {args.output_path}")
+
 
 
