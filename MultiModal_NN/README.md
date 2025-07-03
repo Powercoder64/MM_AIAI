@@ -29,6 +29,12 @@ Classroom‑activity detection from **pre‑extracted I3D features** *and* raw d
   python convert_JSON_MM.py file_name  #converts the output video csv file to MM_IO Multimodal (audio-enhanced video) output JSON file
  ```
 
+ ```bash
+  python Merge_Audio_Video.py file_name  #merge audio/transcript and video JASON file as a unified single mm-io JSON file.
+ ```
+
+The audio/transcripts files are located at `./data/audio`, and the video output files are located at `./output`.
+
 
 * **Multimodal fusion** of  
   • RGB embeddings + Flow embeddings + 20‑class transcript one‑hots  
@@ -96,7 +102,8 @@ data/
 ```text
 Multimodal_NN/
 ├── Neural_Network.py          # entry point (arg --filename)
-├── convert_JSON_video.py             # convert to mm-io Multimodal (audio-enhanced video) JSON file
+├── convert_JSON_video.py       # convert to mm-io Multimodal (audio-enhanced video) JSON file
+├── Merge_Audio_Video.py       # merge audio/transcript and MM JSON files to a unified mm-io JSON file
 ├── options.py                 # paths & hyper‑params
 ├── models/
 │   ├── BaSNet_model_best.pkl  # ⇦ download & place here
