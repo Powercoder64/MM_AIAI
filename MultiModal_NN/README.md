@@ -30,10 +30,10 @@ Classroom‑activity detection from **pre‑extracted I3D features** *and* raw d
  ```
 
  ```bash
-  python Merge_Audio_Video.py file_name  #merge audio/transcript and video JASON file as a unified single mm-io JSON file.
+  python Merge_Audio_Video.py file_name  #merge audio/transcript and video/MM JASON file as a unified single mm-io JSON file.
  ```
 
-The audio/transcripts files are located at `./data/audio`, and the video output files are located at `./output`.
+The audio/transcripts files are located at `./data/audio`, and the video/MM output files are located at `./output`.
 
 
 * **Multimodal fusion** of  
